@@ -1,2 +1,4 @@
 .idea/
 .ssh/
+.vscode/
+__pycache__/
