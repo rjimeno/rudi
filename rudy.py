@@ -3,6 +3,7 @@
 import os
 import sys
 import yaml
+import subprocess
 
 CHGRP = "/bin/chgrp "
 CHMOD = "/bin/chmod "
@@ -23,7 +24,7 @@ def do_file(file):
     with open(fn, "w") as to_file:
         try:
             to_file.write(file["content"])
-        except to_file.errors as w_exc:
+        except Exception as w_exc:
             print(w_exc)
             exit(-2)
     os.system(CHOWN + file["owner"] + " " + fn)
@@ -37,8 +38,21 @@ def converge(data):
 
         def do_package(package):
             print("Reinstalling " + package + " ...")
-            os.system(DPKG_AUTOPURGE + package)
-            os.system(DPKG_INSTALL + package)
+            # Run purge then install and check return codes so failures are detected
+            purge_cmd = DPKG_AUTOPURGE + package
+            install_cmd = DPKG_INSTALL + package
+
+            purge_proc = subprocess.run(purge_cmd, shell=True)
+            if purge_proc.returncode != 0:
+                # Purge may fail if package not installed; warn but continue
+                print(f"Warning: purge command for '{package}' returned exit code {purge_proc.returncode}")
+
+            install_proc = subprocess.run(install_cmd, shell=True)
+            if install_proc.returncode != 0:
+                print(f"ERROR: Installation of package '{package}' failed (exit code {install_proc.returncode}).")
+                # Do not proceed to deploy files for a failed install
+                return
+
             print("Package " + package + " installed successfully.")
             if "Packages" in data and \
                     package in data["Packages"] and \
