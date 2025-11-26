@@ -2,7 +2,7 @@
 
 Services:
   apache2:
-    packages: [ apache2, php5 ]
+    packages: [ apache2, php ] #php5 ]
 
 Packages:
   apache2:
