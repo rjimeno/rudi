@@ -1,31 +1,31 @@
-# Rudy
+# Rudi
 
 
 NAME:
 
-    Rudy - The rudimentary configuration management tool.
+    Rudi - The rudimentary configuration management tool.
 
     
 SYNOPSIS:
 
 ```bash
-rudy.py [this_nodes_configuration.yaml]
+rudi.py [this_nodes_configuration.yaml]
 ```
 
-If no argument is provided, Rudy will try to open a node configuration file
-named `rudy.yaml` in the current working directory and apply it to make the 
+If no argument is provided, Rudi will try to open a node configuration file
+named `rudi.yaml` in the current working directory and apply it to make the 
 current node converge to it.
 
     
 DESCRIPTION:
 
-Rudy is a rudimentary configuration management tool that can be used to 
-give a handful of servers some level of configuration. Rudy's configuration 
+Rudi is a rudimentary configuration management tool that can be used to 
+give a handful of servers some level of configuration. Rudi's configuration 
 files are simple YAML files. To learn how to write configuration files we will
 start by reading some of them:
 
 ```yaml
-# This line is a YAML comment. File can be named rudy.yaml
+# This line is a YAML comment. File can be named rudi.yaml
 Services:
   apache2:
     packages: [ apache2, php5 ]
@@ -86,29 +86,29 @@ more package names as they appear to the dpkg command in Ubuntu Linux.
  
 INSTALLATION:
  
-Rudy is a ~85 line Python script named rudy.py that uses PyYAML and should be 
+Rudi is a ~85 line Python script named rudi.py that uses PyYAML and should be 
 available from its repository at
-[https://github.com/rjimeno/rudy](https://github.com/rjimeno/rudy).
+[https://github.com/rjimeno/rudi](https://github.com/rjimeno/rudi).
 Most Ubuntu Linux 14.04 systems should have Python 3.4 installed. To make 
 sure you have PyYAML use ```sapt-get install -y python3-yaml```.
 
-Creating node configuration files for Rudy is simple but not trivial. Start 
-by looking into the YAML files in Rudy's repository. Then, check the examples
+Creating node configuration files for Rudi is simple but not trivial. Start 
+by looking into the YAML files in Rudi's repository. Then, check the examples
  in this document and use one of those files and examples as a starting point
  and and make changes according to what you think you will need.
  
 Use some free online tool to verify your file is valid YAML
 [(like this one)](https://codebeautify.org/yaml-validator)
 and use a "disposable" system for testing (i.e. avoid Production 
-environments). For simplicity, name the file rudy.yaml but name it 
+environments). For simplicity, name the file rudi.yaml but name it 
 differently as well. 
 
 
 USE:
 
-Rudy must be run under the root persona. One way to do it is:
+Rudi must be run under the root persona. One way to do it is:
 ```bash
-$ sudo python3 rudy.py
+$ sudo python3 rudi.py
 ```
 but there are many other ways to run it. See the examples below.
 
@@ -118,16 +118,16 @@ EXAMPLES:
  - Invocation:
  
 ```bash 
-$ chmod a+x rudy.py 
-$ sudo ./rudy.py  # Implicitly uses rudy.yaml file.
+$ chmod a+x rudi.py 
+$ sudo ./rudi.py  # Implicitly uses rudi.yaml file.
 ```
   
 ```bash
 # mkdir ~/bin/
-# chmod a+x rudy.py
-# mv rudy.py ~/bin/
+# chmod a+x rudi.py
+# mv rudi.py ~/bin/
 # export PATH=${PATH}:~/bin/
-# rudy.py evictCronPhp5Apache2.yaml  # Removes packages cron, php5 & apache2. 
+# rudi.py evictCronPhp5Apache2.yaml  # Removes packages cron, php5 & apache2. 
 ```
 
 - YAML files:
@@ -193,7 +193,7 @@ files that do not appear under Files:.
  
 BUGS:
  
-The main "bug" is that Rudy is rudymentary and so the user should not expect 
+The main "bug" is that Rudi is rudimentary and so the user should not expect 
 too much from it. Keep that in mind while reading the rest of this section.
 
 The Evictions feature excesively aggresive. It was created to comply with the
@@ -203,7 +203,7 @@ Debian packages." Not nice.
 If the YAML file has more than one document, only the first one will be used.
 Maybe it would make more sense to use them all, but that's still not clear.
  
-Rudy could and should perform some sanity checks on the YAML file. For 
+Rudi could and should perform some sanity checks on the YAML file. For 
 example: having a Files: entry that is not used anywhere under Packages: 
 should issue warning and require manual intervention before starting (perhaps
  in the form of a Yes/No question.
