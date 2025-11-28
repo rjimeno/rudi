@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import sys
 import yaml
 import subprocess
@@ -20,6 +19,22 @@ STOP = ' stop'
 
 
 def do_file(file):
+    """Deploy a file with specified attributes.
+
+    file: A dictionary with keys:
+        base: The base directory for the file.
+        content: The content to write into the file.
+        group: The group ownership for the file.
+        mode: The file permissions mode.
+        name: The name of the file.
+        owner: The owner of the file.
+
+    Returns:
+        None because we are only interested in side effects.
+
+    Raises:
+        SystemExit: If any subprocess call fails or file operations fail.
+    """
     base = file['base']
     content = file['content']
     group = file['group']
@@ -33,7 +48,7 @@ def do_file(file):
     except subprocess.CalledProcessError as e:
         print(f'Error creating directory {base}: {e}')
         sys.exit(e.returncode)
-    with open(fn, 'w') as to_file:
+    with open(fn, 'w', encoding='utf-8') as to_file:
         try:
             to_file.write(content)
         except Exception as w_exc:
@@ -52,6 +67,12 @@ def converge(data):
     def do_service(service):
 
         def do_package(package):
+            """
+            Handle package installation/reinstallation and associated files.
+            
+            :param package: The name of the package to install/reinstall.
+            :return: None
+            """
             print(f'Reinstalling {package} ...')
             try:
                 subprocess.run(f'{DPKG_INSTALL}{package}', shell=True, check=True)
@@ -66,7 +87,8 @@ def converge(data):
                     if f in data['Files']:
                         do_file(data['Files'][f])
                     else:
-                        print(f"\n\nWARNING: File '{f}' required by package '{package}' was not found amongst Files:.\n\n")
+                        print(f"\n\nWARNING: File '{f}' required by package"
+                              f" '{package}' was not found amongst Files:.\n\n")
         print(f"Cycling service '{service}'.")
         try:
             subprocess.run(f'{SERVICE}{service}{STOP}', shell=True, check=True)
@@ -103,7 +125,7 @@ if '__main__' == __name__:
               ' [ configuration_file ]  # ' + DEFAULT_CONF +
               ' if configuration_file is omitted.\n\n', sys.stderr)
         sys.exit(-1)
-    with open(input_file, 'r') as stream:
+    with open(input_file, 'r', encoding='utf-8') as stream:
         try:
             yaml_data = yaml.safe_load(stream)
         except yaml.YAMLError as r_exc:
