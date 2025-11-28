@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Rudi - A simple configuration management tool.
@@ -100,12 +100,7 @@ def do_service(service, data):
     """
     Reinstall packages for a service in a controlled manner.
     """
-    print(f"Cycling service '{service}'.")
-    try:
-        subprocess.run(f'{SERVICE}{service}{STOP}', shell=True, check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error stopping service '{service}': {e}")
-        sys.exit(e.returncode)
+    print(f"Installing, enabling, and starting service '{service}'.")
     for p in data['Services'][service]['packages']:
         do_package(p, data)
     try:
