@@ -116,8 +116,8 @@ class TestRudiFileDeployment(unittest.TestCase):
         mkdir_calls = [c for c in mock_run.call_args_list if "mkdir" in str(c)]
         self.assertTrue(len(mkdir_calls) > 0, "mkdir should have been called")
 
-        # Check that file was opened for writing
-        mock_file.assert_called_with("/tmp/test_rudi_/test.txt", "w")
+        # Check that file was opened for writing (with UTF-8 encoding)
+        mock_file.assert_called_with("/tmp/test_rudi_/test.txt", "w", encoding="utf-8")
 
         # Check that chown, chgrp, chmod were called
         chown_calls = [c for c in mock_run.call_args_list if "chown" in str(c)]
@@ -145,8 +145,8 @@ class TestRudiFileDeployment(unittest.TestCase):
 
         rudi.do_file(file_spec)
 
-        # Verify the file path is correct (base + name)
-        mock_file.assert_called_with("/etc/crontab", "w")
+        # Verify the file path is correct (base + name) with UTF-8 encoding
+        mock_file.assert_called_with("/etc/crontab", "w", encoding="utf-8")
 
 
 class TestRudiConverge(unittest.TestCase):
