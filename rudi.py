@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
 
-import sys
-import yaml
+"""
+Rudi - A simple configuration management tool.
+
+This script reads a YAML configuration file and applies the desired state
+to the system by managing files, packages, and services accordingly.
+"""
+
 import subprocess
+import sys
+
+import yaml
+
 
 CHGRP = '/bin/chgrp '
 CHMOD = '/bin/chmod '
@@ -51,9 +60,9 @@ def do_file(file):
     with open(fn, 'w', encoding='utf-8') as to_file:
         try:
             to_file.write(content)
-        except Exception as w_exc:
-            print(f'Error writing file {fn}: {w_exc}')
-            sys.exit(-2) # TODO: Maybe improve this block (from 'with', 5 lines above).
+        except OSError as e:
+            print(f'Error writing file {fn}: {e}')
+            sys.exit(e.errno)
     try:
         subprocess.run(f'{CHOWN}{owner} {fn}', shell=True, check=True)
         subprocess.run(f'{CHGRP}{group} {fn}', shell=True, check=True)
@@ -63,49 +72,50 @@ def do_file(file):
         sys.exit(e.returncode)
     print(f'File {fn} deployed successfully.')
 
-def converge(data):
-    def do_service(service):
+def do_package(package, data):
+    """
+    Handle package installation/reinstallation and associated files.
+    
+    :param package: The name of the package to install/reinstall.
+    :return: None
+    """
+    print(f'Reinstalling {package} ...')
+    try:
+        subprocess.run(f'{DPKG_INSTALL}{package}', shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f'Error reinstalling package {package}: {e}')
+        sys.exit(e.returncode)
+    print(f'Package {package} installed successfully.')
+    if 'Packages' in data and \
+            package in data['Packages'] and \
+            'files' in data['Packages'][package]:
+        for f in data['Packages'][package]['files']:
+            if f in data['Files']:
+                do_file(data['Files'][f])
+            else:
+                print(f"\n\nWARNING: File '{f}' required by package"
+                      f" '{package}' was not found amongst Files:.\n\n")
 
-        def do_package(package):
-            """
-            Handle package installation/reinstallation and associated files.
-            
-            :param package: The name of the package to install/reinstall.
-            :return: None
-            """
-            print(f'Reinstalling {package} ...')
-            try:
-                subprocess.run(f'{DPKG_INSTALL}{package}', shell=True, check=True)
-            except subprocess.CalledProcessError as e:
-                print(f'Error reinstalling package {package}: {e}')
-                sys.exit(e.returncode)
-            print(f'Package {package} installed successfully.')
-            if 'Packages' in data and \
-                    package in data['Packages'] and \
-                    'files' in data['Packages'][package]:
-                for f in data['Packages'][package]['files']:
-                    if f in data['Files']:
-                        do_file(data['Files'][f])
-                    else:
-                        print(f"\n\nWARNING: File '{f}' required by package"
-                              f" '{package}' was not found amongst Files:.\n\n")
-        print(f"Cycling service '{service}'.")
-        try:
-            subprocess.run(f'{SERVICE}{service}{STOP}', shell=True, check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error stopping service '{service}': {e}")
-            sys.exit(e.returncode)
-        for p in data['Services'][service]['packages']:
-            do_package(p)
-        try:
-            subprocess.run(f'{SERVICE}{service}{START}', shell=True, check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error starting service '{service}': {e}")
-            sys.exit(e.returncode)
-        print(f"Service '{service}' is up & running now.")
+def do_service(service, data):
+    """
+    Reinstall packages for a service in a controlled manner.
+    """
+    print(f"Installing, enabling, and starting service '{service}'.")
+    for p in data['Services'][service]['packages']:
+        do_package(p, data)
+    try:
+        subprocess.run(f'{SERVICE}{service}{START}', shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error starting service '{service}': {e}")
+        sys.exit(e.returncode)
+    print(f"Service '{service}' is up & running now.")
+
+def converge(data):
+    """
+    Make this node match the desired state as per the provided configuration data."""
     if 'Services' in data:
         for s in data['Services']:
-            do_service(s)
+            do_service(s, data)
     if 'Evictions' in data:
         print('Removing final packages...')
         try:
@@ -114,7 +124,6 @@ def converge(data):
             print(f'Error removing packages: {e}')
             sys.exit(e.returncode)
         print('Packages removed successfully.')
-
 
 if '__main__' == __name__:
     input_file = DEFAULT_CONF
@@ -128,7 +137,7 @@ if '__main__' == __name__:
     with open(input_file, 'r', encoding='utf-8') as stream:
         try:
             yaml_data = yaml.safe_load(stream)
-        except yaml.YAMLError as r_exc:
-            print(r_exc)
+        except yaml.YAMLError as e:
+            print(f'Error parsing YAML file {input_file}: {e}')
             sys.exit(-2)
     converge(yaml_data)

@@ -1,3 +1,4 @@
 -r requirements.txt
 pytest>=8.0
 pylint>=3.0
+types-PyYAML>=6.0 # For VSCode type hints; 'Developer: Reload Window' required.
