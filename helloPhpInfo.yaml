@@ -26,9 +26,9 @@ Files:
 Packages:
   apache2:
     files: []
-  php5:
+  php8:
     files: [ hello.php, info.php ]
 
 Services:
   apache2:
-    packages: [ apache2, php5 ]
+    packages: [ apache2, php8 ]

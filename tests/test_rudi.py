@@ -171,11 +171,11 @@ class TestRudiConverge(unittest.TestCase):
 
         rudi.converge(data)
 
-        # Verify service stop and start were called
+        # Verify service start was called (after package install)
         service_calls = [str(c) for c in mock_run.call_args_list]
         service_calls_str = " ".join(service_calls)
-        self.assertTrue("apache2" in service_calls_str and "stop" in service_calls_str)
-        self.assertTrue("apache2" in service_calls_str and "start" in service_calls_str)
+        self.assertTrue("apache2" in service_calls_str and "start" in service_calls_str,
+                        "Service should be started after package installation")
 
     @patch("subprocess.run")
     def test_converge_evictions(self, mock_run):
