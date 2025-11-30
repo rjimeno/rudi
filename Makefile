@@ -1,4 +1,4 @@
-.PHONY: help all setup-dev tests tests-unit tests-integration lint
+.PHONY: help troubleshoot all setup-dev tests tests-unit tests-integration lint
 
 .DEFAULT_GOAL := help
 
@@ -8,17 +8,20 @@
 help:
 	@echo "Makefile commands:"
 	@echo ""
+	@echo "  Troubleshooting:"
+	@echo "    make troubleshoot - Start a container for troubleshooting"
+	@echo ""
 	@echo "  Development:"
-	@echo "    make setup-dev        - Install development dependencies"
-	@echo "    make all              - Run setup-dev, tests, and lint"
+	@echo "    make setup-dev         - Install development dependencies"
+	@echo "    make all               - Run setup-dev, tests, and lint"
 	@echo ""
 	@echo "  Testing:"
-	@echo "    make tests            - Run all tests (unit + integration)"
-	@echo "    make tests-unit       - Run unit tests and doctests only (fast)"
+	@echo "    make tests             - Run all tests (unit + integration)"
+	@echo "    make tests-unit        - Run unit tests and doctests only (fast)"
 	@echo "    make tests-integration - Run Docker-based integration tests (slow, requires Docker)"
 	@echo ""
 	@echo "  Code quality:"
-	@echo "    make lint             - Lint with pylint"
+	@echo "    make lint              - Lint with pylint"
 	@echo ""
 	@echo "See TESTING.md for testing strategy details."
 	@echo ""
@@ -26,6 +29,10 @@ help:
 
 # Use venv Python if it exists, otherwise fall back to system python3
 PYTHON := $(if $(wildcard .venv/bin/python), .venv/bin/python, python3)
+
+troubleshoot:
+	@echo "Starting a container for troubleshooting..."
+	bash tests/troubleshoot/container.sh
 
 all: setup-dev tests lint
 
